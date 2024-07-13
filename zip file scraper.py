@@ -11,9 +11,23 @@ def get_zip_links(url):
     links = []
     for link in soup.find_all('a'):
         href = link.get('href')
-        if href.endswith('.zip'):
+        if href and href.endswith('.zip'):
             links.append(urljoin(url, href))
     return links
+
+# Function to display zip file names in batches
+def display_zip_files(zip_links):
+    for i in range(0, len(zip_links), 100):
+        batch = zip_links[i:i + 100]
+        print(f"\nBatch {i // 100 + 1}:")
+        for link in batch:
+            filename = os.path.basename(urlparse(link).path)
+            print(filename)
+        
+        if i + 100 < len(zip_links):
+            user_input = input("Press Enter to view the next batch or 'X' to quit: ")
+            if user_input.strip().lower() == 'x':
+                break
 
 # Function to download files to a specified folder
 def download_files(links, download_folder):
@@ -52,6 +66,12 @@ if __name__ == "__main__":
     zip_links = get_zip_links(url)
     print(f"Total ZIP files found: {len(zip_links)}")
 
-    download_files(zip_links, download_folder)
+    display_zip_files(zip_links)
 
-    print("All files downloaded successfully.")
+    # Confirm download
+    confirm = input("Do you want to download these files? (yes/no): ").strip().lower()
+    if confirm != 'yes':
+        print("Aborting download.")
+    else:
+        download_files(zip_links, download_folder)
+        print("All files downloaded successfully.")
